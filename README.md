@@ -2,54 +2,81 @@
 
 github codeload url(sample): https://codeload.github.com/everfore/codeload/zip/master
 
-##	get
+#	get
 
-go get github.com/everfore/codeload
+	go get github.com/everfore/codeload
 
-##	usage
+	go install
 
->codeload
+	cd cdwn && go install
 
->user/repo:master
-
-	or
-
->codeload
-
->user/repo
-
-	or
-
->codeload
-
->repo    with default by @filepath.Base(dir)
-
-if branch is nil, use master as default branch.
-if user is nil, use filepath.Base as default user.
+	cd pull && go install
 
 
-### cdwn
+#	usage
 
->cd cdwn && go install
 
->cdwn -i
+_with default by @filepath.Base(dir)_
 
-[user/]repo[:branch] 同上
+_if branch is nil, use master as default branch._
+
+_if user is nil, use filepath.Base as default user._
+
+
+## No .git repo
+
 ```
+codeload #or cdln
+
+[user/]repo[:branch]  > $
+```
+
+`https://codeload.github.com/everfore/codeload/zip/master`
+
+
+>No .git repo && go install
+
+
+```
+cdln -i
+
+[user/]repo[:branch]  > $
+
 -i : go install
 ```
 
-### cdln
+`https://codeload.github.com/everfore/codeload/zip/master` and `go install`
 
->cd cdln && go install
 
->cdln -i -w
+## With .git repo
 
-[user/]repo[:branch] 同上
+
+ - git clone 
+
+>git clone || go install
+
+
 ```
--i : go install
--w: git@github.com:user/repo.git
+pull -i -r
+
+[user/]repo[:branch]  > $
+
 ```
+
+`git clone git:// or git@` and `go install`
+
+
+ - git pull
+
+
+```
+pull
+
+
+```
+
+`git pull`
+
 
 ##	license
 

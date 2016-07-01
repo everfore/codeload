@@ -1,12 +1,10 @@
 package main
 
 import (
-	"flag"
 	"fmt"
-	"github.com/everfore/codeload/unzip"
 	"github.com/everfore/exc"
-	"github.com/shaalx/goutils"
-	"net/http"
+	// "github.com/shaalx/goutils"
+	"flag"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,17 +12,20 @@ import (
 )
 
 var (
+	read    = false // default writeable
 	install = false
 )
 
 func init() {
+	flag.BoolVar(&read, "r", false, "-r [true] : git@github.com[false] or git://github.com[true]")
 	flag.BoolVar(&install, "i", false, "-i [true] : go install")
 }
 
 func main() {
 	flag.Parse()
-	var input, user, repo, branch, input_1, target string
+	var input, user, repo, branch, input_1 /*,target*/ string
 	tips := "[user/]repo[:branch]  > $"
+
 	fmt.Print(tips)
 	fmt.Scanf("%s", &input)
 
@@ -33,6 +34,9 @@ func main() {
 		inputs := strings.Split(input, "/")
 		user = inputs[0]
 		input_1 = inputs[1]
+	} else if len(input) <= 0 {
+		exc.NewCMD("git pull").Debug().Execute()
+		return
 	} else {
 		pwd, _ := os.Getwd()
 		user = filepath.Base(pwd)
@@ -48,23 +52,19 @@ func main() {
 		branch = "master"
 	}
 	fmt.Printf("%s/%s:%s\n", user, repo, branch)
-	codeload_uri := fmt.Sprintf("https://codeload.github.com/%s/%s/zip/%s", user, repo, branch)
-	resp, err := http.Get(codeload_uri)
-	if goutils.CheckErr(err) {
-		panic(fmt.Sprintf("GET:%s ERROR:%v\n", codeload_uri, err))
+	codeload_uri := ""
+	if !read {
+		codeload_uri = fmt.Sprintf("git clone --depth 1 git@github.com:%s/%s.git", user, repo)
+	} else {
+		codeload_uri = fmt.Sprintf("git clone --depth 1 git://github.com/%s/%s", user, repo)
 	}
-	if resp == nil {
-		panic("nil")
-	}
-
 	GOPATH := os.Getenv("GOPATH")
-	target = filepath.Join(GOPATH, "src", "github.com", user, repo)
-	unzip.UnzipReader(resp.Body, target)
-
-	// os.MkdirAll(target, 0777)
+	target := filepath.Join(GOPATH, "src", "github.com", user, repo)
+	os.MkdirAll(target, 0777)
 	cmd := exc.NewCMD(codeload_uri).Env("GOPATH").Cd("src/github.com/").Cd(user).Wd().Debug().Execute()
 	if install {
 		cmd.Cd(repo).Wd().Reset("go install").Execute()
 	}
+
 	fmt.Printf("cost time:%v\n", time.Now().Sub(start))
 }
